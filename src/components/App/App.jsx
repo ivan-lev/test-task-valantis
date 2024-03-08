@@ -8,41 +8,47 @@ import CardList from '../CardList/CardList';
 import PaginatedItems from '../PaginatedItems/PaginatedItems';
 
 import { api } from '../../utils/api';
+import { ITEMS_PER_PAGE } from '../../variables/variables';
 
 export default function App() {
   const [ids, setIds] = useState([]);
   const [itemsList, setItemsList] = useState([]);
-  const [listToDisplay, setListToDisplay] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
+  const [paginatedList, setPaginatedList] = useState([]);
+  const [itemOffset, setItemOffset] = useState(0);
   const [brands, setBrands] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [minCost, setMinCost] = useState(0);
-  const [maxCost, setMaxCost] = useState(0);
+  const [selectedBrand, setSelectedBrand] = useState('all-brands');
+  const [minCost, setMinCost] = useState('');
+  const [maxCost, setMaxCost] = useState('');
+  const [minMax, setMinMax] = useState({});
 
-  // get initial id-list of all products
+  // get all available brands on query results
   useEffect(() => {
-    api.getData('get_ids', { offset: 0 }).then(response => {
-      //   console.log(response.result);
-      setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
-    });
-  }, []);
+    // get all available brands
+    if (itemsList.length !== 0) {
+      api.getData('get_fields', { field: 'brand' }).then(response => {
+        setBrands([...new Set(response.result.filter(brand => brand !== null))].sort());
+      });
+    }
+  }, [itemsList]);
 
-  // get all available brands
+  // check if id-list is changed after first mount or searching and get new cards array
   useEffect(() => {
-    api.getData('get_fields', { field: 'brand' }).then(response => {
-      setBrands([...new Set(response.result.filter(brand => brand !== null))].sort());
-    });
-  }, []);
-
-  // check if id-list is changed and get cards
-  useEffect(() => {
-    api.getData('get_items', { ids: ids }).then(response => {
-      //   get unique cards if some cards have the same ids;
-      const list = getUniqueCards(response.result, 'id');
-      console.log(list);
-      setItemsList(list);
-    });
+    if (ids.length !== 0) {
+      api.getData('get_items', { ids: ids }).then(response => {
+        //   get unique cards if some cards have the same ids;
+        const list = getUniqueCards(response.result, 'id');
+        console.log('объекты', searchQuery, list);
+        const minMaxPrices = findMinMaxPrice(list);
+        setMinMax(minMaxPrices);
+        setItemsList(list);
+        setFilteredList(list);
+        // setMinCost(minMaxPrices.min);
+        // setMaxCost(minMaxPrices.max);
+      });
+    }
   }, [ids]);
 
   function getUniqueCards(arr, key) {
@@ -51,21 +57,66 @@ export default function App() {
 
   function searchItems() {
     api.getData('filter', { product: searchQuery.toString() }).then(response => {
-      console.log('click');
+      console.log('ищем', searchQuery);
       setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
+      setSelectedBrand('all-brands');
     });
   }
 
   function handleSetMinCost(event) {
-    event.preventDefault();
-    // console.log(event.target.value);
-    setMinCost(event.target.value);
+    setMinCost(parseInt(event.target.value));
   }
 
   function handleSetMaxCost(event) {
+    setMaxCost(parseInt(event.target.value));
+  }
+
+  function filterItems(event) {
     event.preventDefault();
-    // console.log(event.target.value);
-    setMaxCost(event.target.value);
+
+    setItemOffset(0);
+
+    let newFilteredList = itemsList.filter(item => {
+      if (selectedBrand === 'all-brands') {
+        return true;
+      }
+      return item.brand === selectedBrand;
+    });
+    // setFilteredList(newFilteredList);
+    console.log('newFilteredList:', newFilteredList);
+
+    // const minMaxPrices = findMinMaxPrice(newFilteredList);
+    //   console.log('min', min);
+    //   console.log('max', max);
+    newFilteredList = newFilteredList.filter(item => {
+      if (item.price >= (minCost || 0) && item.price <= (maxCost || Number.MAX_SAFE_INTEGER)) {
+        return true;
+      }
+    });
+    const minMaxPrices = findMinMaxPrice(newFilteredList);
+    setMinMax(minMaxPrices);
+    console.log('minMaxPrices', minMaxPrices);
+    setFilteredList(newFilteredList);
+    console.log('newFilteredList:', newFilteredList);
+
+    // setMinCost(minMaxPrices.min);
+    // setMaxCost(minMaxPrices.max);
+  }
+
+  function findMinMaxPrice(array) {
+    if (array.length === 0) {
+      return { min: '', max: '' };
+    }
+    const min = array.reduce(
+      (prev, curr) => (prev < curr.price ? prev : curr.price),
+      array[0].price
+    );
+    const max = array.reduce(
+      (prev, curr) => (prev > curr.price ? prev : curr.price),
+      array[0].price
+    );
+
+    return { min: min, max: max };
   }
 
   return (
@@ -74,18 +125,24 @@ export default function App() {
       <SearchForm searchQuery={searchQuery} onType={setSearchQuery} onSearch={searchItems} />
       <Filter
         brands={brands}
+        selectedBrand={selectedBrand}
         setSelectedBrand={setSelectedBrand}
         minCost={minCost}
         maxCost={maxCost}
         setMinCost={handleSetMinCost}
         setMaxCost={handleSetMaxCost}
+        minMax={minMax}
+        onFilter={filterItems}
       />
-      {itemsList.length !== 0 && <CardList listToDisplay={listToDisplay} />}
-      {itemsList.length !== 0 && (
+      {ids.length === 0 && <p className="main__search-greeting">Введите фразу для поиска</p>}
+      {filteredList.length !== 0 && <CardList paginatedList={paginatedList} />}
+      {filteredList.length !== 0 && (
         <PaginatedItems
-          itemsPerPage={50}
-          itemsList={itemsList}
-          setListToDisplay={setListToDisplay}
+          itemOffset={itemOffset}
+          setItemOffset={setItemOffset}
+          itemsPerPage={ITEMS_PER_PAGE}
+          itemsList={filteredList}
+          setPaginatedList={setPaginatedList}
         />
       )}
     </section>
