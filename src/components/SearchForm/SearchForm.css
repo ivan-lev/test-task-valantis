@@ -56,11 +56,7 @@
 }
 
 .search-form__button_disabled {
-  opacity: 0.3;
-}
-
-.search-form__button_disabled:hover {
-  opacity: 0.3;
+  background-image: url('../../assets/icons/spinner.gif');
 }
 
 .search-form__filters {
