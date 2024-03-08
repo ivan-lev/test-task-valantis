@@ -80,18 +80,15 @@
   }
 }
 
-.card__top-row {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  justify-content: space-between;
-}
-
 .card__id {
-  font-size: 10px;
+  font-size: 7px;
 }
 
 .card__price {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  justify-content: end;
 }
 
 .card__price::after {
@@ -99,7 +96,7 @@
 }
 
 .card__title {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: bold;
   line-height: normal;
   height: 32px;
