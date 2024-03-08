@@ -14,7 +14,6 @@ export default function Filter({
   onFilter
 }) {
   const handleSetBrand = event => {
-    console.log(event.target.value);
     setSelectedBrand(event.target.value);
   };
 
