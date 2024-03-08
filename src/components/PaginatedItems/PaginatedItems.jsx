@@ -3,11 +3,10 @@ import './PaginatedItems.css';
 import ReactPaginate from 'react-paginate';
 import React, { useEffect, useState } from 'react';
 
-import CardList from '../CardList/CardList';
+// import CardList from '../CardList/CardList';
 
-export default function PaginatedItems({ itemsPerPage, itemsList }) {
-  // We start with an empty list of items.
-  const [currentItems, setCurrentItems] = useState([]);
+export default function PaginatedItems({ itemsPerPage, itemsList, setListToDisplay }) {
+  // We provide itemsList and start work with it.
   const [pageCount, setPageCount] = useState(0);
   // Here we use item offsets; we could also use page offsets
   // following the API or data you're working with.
@@ -16,24 +15,25 @@ export default function PaginatedItems({ itemsPerPage, itemsList }) {
   useEffect(() => {
     // Fetch items from another resources.
     const endOffset = itemOffset + itemsPerPage;
-    console.log(`Loading items from ${itemOffset} to ${endOffset}`);
-    setCurrentItems(itemsList.slice(itemOffset, endOffset));
+    // console.log(`Loading items from ${itemOffset} to ${endOffset}`);
+    setListToDisplay(itemsList.slice(itemOffset, endOffset));
+    // setCurrentItems(itemsList.slice(itemOffset, endOffset));
     setPageCount(Math.ceil(itemsList.length / itemsPerPage));
-  }, [itemOffset, itemsPerPage]);
+  }, [itemOffset, itemsPerPage, itemsList]);
 
   // Invoke when user click to request another page.
   const handlePageClick = event => {
     const newOffset = (event.selected * itemsPerPage) % itemsList.length;
-    console.log(`User requested page number ${event.selected}, which is offset ${newOffset}`);
+    // console.log(`User requested page number ${event.selected}, which is offset ${newOffset}`);
     setItemOffset(newOffset);
   };
 
-  console.log('currentItems:', currentItems);
+  // console.log('currentItems:', currentItems);
 
   return (
     <>
       {/* <Items currentItems={currentItems} /> */}
-      {currentItems.length !== 0 && <CardList list={currentItems} />}
+      {/* {currentItems.length !== 0 && <CardList list={currentItems} />} */}
       <ReactPaginate
         nextLabel="вперёд"
         onPageChange={handlePageClick}
