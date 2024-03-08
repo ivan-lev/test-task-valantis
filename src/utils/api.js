@@ -1,7 +1,7 @@
 import { BASE_URL, PASSWORD } from '../variables/variables';
 import md5 from 'md5';
 
-const getCards = (action, params) => {
+const getData = (action, params) => {
   const currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
   return fetch(`${BASE_URL}`, {
@@ -34,4 +34,4 @@ const checkResponseStatus = res => {
   return res.json();
 };
 
-export const api = { getCards };
+export const api = { getData };
