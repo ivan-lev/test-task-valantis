@@ -1,0 +1,120 @@
+.card {
+  padding: 0;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+
+  @media screen and (max-width: 768px) {
+    min-height: 235px;
+  }
+
+  @media screen and (max-width: 320px) {
+    min-height: unset;
+    gap: 16px;
+  }
+}
+
+.card__brand {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: var(--bg-secondary);
+  font-size: 10px;
+  padding: 5px;
+
+  @media screen and (max-width: 320px) {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+.card__cover {
+  height: 201px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  background-image: url(../../images/spinner.gif);
+  background-size: 50px;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+
+  @media screen and (max-width: 768px) {
+    height: 190px;
+  }
+
+  @media screen and (max-width: 320px) {
+    height: 168px;
+  }
+}
+
+.card__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  @media screen and (max-width: 768px) {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 2px;
+  }
+
+  @media screen and (max-width: 320px) {
+    padding-bottom: 0;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.card__top-row {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.card__id {
+  font-size: 10px;
+}
+
+.card__price {
+}
+
+.card__price::after {
+  content: ' \20BD';
+}
+
+.card__title {
+  font-size: 13px;
+  font-weight: bold;
+  line-height: normal;
+  height: 32px;
+
+  @media screen and (max-width: 768px) {
+    height: 13px;
+  }
+
+  @media screen and (max-width: 320px) {
+    height: unset;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    font-size: 12px;
+    line-height: 1;
+  }
+}
