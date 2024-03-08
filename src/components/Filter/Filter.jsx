@@ -4,13 +4,17 @@ import React from 'react';
 
 export default function Filter({
   brands,
+  selectedBrand,
   setSelectedBrand,
   minCost,
   maxCost,
   setMinCost,
-  setMaxCost
+  setMaxCost,
+  minMax,
+  onFilter
 }) {
   const handleSetBrand = event => {
+    console.log(event.target.value);
     setSelectedBrand(event.target.value);
   };
 
@@ -18,7 +22,10 @@ export default function Filter({
     <div className="filter">
       <div className="filter__block">
         <span>Бренд</span>
-        <select className="filter__brand" onChange={handleSetBrand}>
+        <select className="filter__brand" value={selectedBrand} onChange={handleSetBrand}>
+          <option key="all-brands" value="all-brands">
+            Все бренды
+          </option>
           {brands.map(brand => (
             <option key={brand} value={brand}>
               {brand}
@@ -33,6 +40,7 @@ export default function Filter({
           type="number"
           min="0"
           max={maxCost}
+          placeholder={minMax.min}
           value={minCost}
           onChange={setMinCost}
         ></input>
@@ -40,10 +48,15 @@ export default function Filter({
           className="filter__price-input"
           type="number"
           min="0"
+          max={maxCost}
+          placeholder={minMax.max}
           value={maxCost}
           onChange={setMaxCost}
         ></input>
       </div>
+      <button className="filter__button" onClick={onFilter}>
+        Фильтровать
+      </button>
     </div>
   );
 }

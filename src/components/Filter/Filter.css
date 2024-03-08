@@ -28,3 +28,19 @@
 .filter__price-input[type='number'] {
   -moz-appearance: textfield;
 }
+
+.filter__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  background-color: var(--bg-buttons);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  height: 25px;
+  box-sizing: border-box;
+}
+
+.filter__button:hover {
+  background-color: var(--bg-buttons-hover);
+}
