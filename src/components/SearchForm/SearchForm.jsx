@@ -3,29 +3,20 @@ import './SearchForm.css';
 //React and components
 import React, { useState } from 'react';
 
-export default function SearchForm({
-  searchQuery,
-  onType,
-  // brands,
-  // setSelectedBrand,
-  onSearch
-  // minCost,
-  // maxCost,
-  // setMinCost,
-  // setMaxCost
-}) {
+export default function SearchForm({ searchQuery, onType, onSearch }) {
   const [searchPlaceholder, setSearchPlaceholder] = useState('Введите ваш запрос');
 
-  // const handleSetBrand = event => {
-  //   setSelectedBrand(event.target.value);
-  // };
-
   const handleSetSearchQuery = event => {
+    setSearchPlaceholder('Введите ваш запрос');
     onType(event.target.value);
   };
 
   const handleSearch = event => {
     event.preventDefault();
+    if (searchQuery.length === 0) {
+      setSearchPlaceholder('Нужно ввести слово для поиска');
+      return;
+    }
     onSearch();
   };
 
