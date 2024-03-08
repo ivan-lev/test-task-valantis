@@ -1,0 +1,30 @@
+.filter {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter__brand {
+  height: 25px;
+}
+
+.filter__block {
+  display: flex;
+  gap: 10px;
+}
+
+.filter__price-input {
+  height: 25px;
+  box-sizing: border-box;
+  width: 60px;
+}
+
+.filter__price-input::-webkit-outer-spin-button,
+.filter__price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.filter__price-input[type='number'] {
+  -moz-appearance: textfield;
+}

@@ -11,26 +11,22 @@ import { api } from '../../utils/api';
 
 export default function App() {
   const [ids, setIds] = useState([]);
-  const [list, setList] = useState([]);
+  const [itemsList, setItemsList] = useState([]);
+  const [listToDisplay, setListToDisplay] = useState([]);
   const [brands, setBrands] = useState([]);
+
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [minCost, setMinCost] = useState(0);
+  const [maxCost, setMaxCost] = useState(0);
 
-  function getUniqueCards(arr, key) {
-    return [...new Map(arr.map(item => [item[key], item])).values()];
-  }
-
-  const searchJewelry = () => {
-    api.getData('filter', { brand: selectedBrand, price: 46000.0 }).then(response => {
-      // api.getData('filter', { product: 'кольцо' }).then(response => {
-      console.log('ids:', response);
-      api.getData('get_items', { ids: response.result }).then(response => {
-        console.log('objects:', response);
-        const list = getUniqueCards(response.result, 'id');
-        //   console.log(list);
-        setList(list);
-      });
+  // get initial id-list of all products
+  useEffect(() => {
+    api.getData('get_ids', { offset: 0 }).then(response => {
+      //   console.log(response.result);
+      setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
     });
-  };
+  }, []);
 
   // get all available brands
   useEffect(() => {
@@ -39,45 +35,59 @@ export default function App() {
     });
   }, []);
 
-  //   useEffect(() => {
-  //     api.getData('get_fields', { field: 'price' }).then(response => {
-  //       console.log([...new Set(response.result.filter(brand => brand !== null))].sort());
-  //     });
-  //   }, []);
-
-  // get list
-  useEffect(() => {
-    api.getData('get_ids', { offset: 0 }).then(response => {
-      //   console.log(response.result);
-      setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
-    });
-  }, []);
-
+  // check if id-list is changed and get cards
   useEffect(() => {
     api.getData('get_items', { ids: ids }).then(response => {
       //   get unique cards if some cards have the same ids;
       const list = getUniqueCards(response.result, 'id');
-      //   console.log(list);
-      setList(list);
+      console.log(list);
+      setItemsList(list);
     });
   }, [ids]);
 
+  function getUniqueCards(arr, key) {
+    return [...new Map(arr.map(item => [item[key], item])).values()];
+  }
+
+  function searchItems() {
+    api.getData('filter', { product: searchQuery.toString() }).then(response => {
+      console.log('click');
+      setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
+    });
+  }
+
+  function handleSetMinCost(event) {
+    event.preventDefault();
+    // console.log(event.target.value);
+    setMinCost(event.target.value);
+  }
+
+  function handleSetMaxCost(event) {
+    event.preventDefault();
+    // console.log(event.target.value);
+    setMaxCost(event.target.value);
+  }
+
   return (
-    <>
+    <section className="main">
       <h1>Каталог товаров</h1>
-      <SearchForm
+      <SearchForm searchQuery={searchQuery} onType={setSearchQuery} onSearch={searchItems} />
+      <Filter
         brands={brands}
         setSelectedBrand={setSelectedBrand}
-        searchJewelry={searchJewelry}
+        minCost={minCost}
+        maxCost={maxCost}
+        setMinCost={handleSetMinCost}
+        setMaxCost={handleSetMaxCost}
       />
-      {/* <Filter
-        isShortMeter={isShortMeter}
-        toggleIsShortMeter={toggleIsShortMeter}
-        brands={brands}
-        setSelectedBrand={setSelectedBrand}
-      /> */}
-      {/* {list.length !== 0 && <CardList list={list} />} */}
-      {list.length !== 0 && <PaginatedItems itemsPerPage={50} itemsList={list} />}
-    </>
+      {itemsList.length !== 0 && <CardList listToDisplay={listToDisplay} />}
+      {itemsList.length !== 0 && (
+        <PaginatedItems
+          itemsPerPage={50}
+          itemsList={itemsList}
+          setListToDisplay={setListToDisplay}
+        />
+      )}
+    </section>
   );
 }

@@ -1,5 +1,4 @@
 .search-form {
-  min-height: 228px;
   padding-top: 80px;
   padding-bottom: 10px;
 
@@ -105,4 +104,14 @@
 .search-form__price-input {
   height: 25px;
   box-sizing: border-box;
+  width: 60px;
+}
+
+.search-form__price-input::-webkit-outer-spin-button,
+.search-form__price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.search-form__price-input[type='number'] {
+  -moz-appearance: textfield;
 }
