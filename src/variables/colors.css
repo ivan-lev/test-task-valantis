@@ -1,0 +1,10 @@
+:root {
+  --bg-primary: #f8f6f4;
+  --bg-secondary: #eeeeee;
+  --bg-buttons: #eeeeee;
+  --bg-buttons-hover: #cccccc;
+  --border-color: #333333;
+
+  --font-color-primary: #333333;
+  --font-color-secondary: #555555;
+}
