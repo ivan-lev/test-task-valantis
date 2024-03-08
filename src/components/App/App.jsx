@@ -6,6 +6,7 @@ import SearchForm from '../SearchForm/SearchForm';
 import Filter from '../Filter/Filter';
 import CardList from '../CardList/CardList';
 import PaginatedItems from '../PaginatedItems/PaginatedItems';
+import Preloader from '../Preloader/Preloader';
 
 import { api } from '../../utils/api';
 import { ITEMS_PER_PAGE } from '../../variables/variables';
@@ -24,6 +25,11 @@ export default function App() {
   const [maxCost, setMaxCost] = useState('');
   const [minMax, setMinMax] = useState({});
 
+  const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const [showPreloder, setShowPreloader] = useState(false);
+  const [showGreetingPhrase, setShowGreetingPhrase] = useState(true);
+  const [nothingFound, setIsNothingFound] = useState(false);
+
   // get all available brands on query results
   useEffect(() => {
     // get all available brands
@@ -37,17 +43,21 @@ export default function App() {
   // check if id-list is changed after first mount or searching and get new cards array
   useEffect(() => {
     if (ids.length !== 0) {
-      api.getData('get_items', { ids: ids }).then(response => {
-        //   get unique cards if some cards have the same ids;
-        const list = getUniqueCards(response.result, 'id');
-        console.log('объекты', searchQuery, list);
-        const minMaxPrices = findMinMaxPrice(list);
-        setMinMax(minMaxPrices);
-        setItemsList(list);
-        setFilteredList(list);
-        // setMinCost(minMaxPrices.min);
-        // setMaxCost(minMaxPrices.max);
-      });
+      api
+        .getData('get_items', { ids: ids })
+        .then(response => {
+          //   get unique cards if some cards have the same ids;
+          const list = getUniqueCards(response.result, 'id');
+          const minMaxPrices = findMinMaxPrice(list);
+          setMinMax(minMaxPrices);
+          setItemsList(list);
+          setFilteredList(list);
+        })
+        .catch(error => console.log(error))
+        .finally(result => {
+          setShowPreloader(false);
+          setIsInputDisabled(false);
+        });
     }
   }, [ids]);
 
@@ -56,11 +66,28 @@ export default function App() {
   }
 
   function searchItems() {
-    api.getData('filter', { product: searchQuery.toString() }).then(response => {
-      console.log('ищем', searchQuery);
-      setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
-      setSelectedBrand('all-brands');
-    });
+    setIsInputDisabled(true);
+    setShowPreloader(true);
+    setShowGreetingPhrase(false);
+    setIsNothingFound(false);
+    setMaxCost('');
+    setMinCost('');
+    setMinMax({ min: '', max: '' });
+    setIds([]);
+    setItemsList([]);
+    setFilteredList([]);
+    api
+      .getData('filter', { product: searchQuery.toString() })
+      .then(response => {
+        setIds(response.result.filter((value, index) => response.result.indexOf(value) === index));
+        response.result.length === 0 && setIsNothingFound(true);
+        setSelectedBrand('all-brands');
+      })
+      .catch(error => {
+        setIsInputDisabled(false);
+        setShowPreloader(false);
+        console.log(error);
+      });
   }
 
   function handleSetMinCost(event) {
@@ -73,7 +100,7 @@ export default function App() {
 
   function filterItems(event) {
     event.preventDefault();
-
+    setIsNothingFound(false);
     setItemOffset(0);
 
     let newFilteredList = itemsList.filter(item => {
@@ -82,12 +109,7 @@ export default function App() {
       }
       return item.brand === selectedBrand;
     });
-    // setFilteredList(newFilteredList);
-    console.log('newFilteredList:', newFilteredList);
 
-    // const minMaxPrices = findMinMaxPrice(newFilteredList);
-    //   console.log('min', min);
-    //   console.log('max', max);
     newFilteredList = newFilteredList.filter(item => {
       if (item.price >= (minCost || 0) && item.price <= (maxCost || Number.MAX_SAFE_INTEGER)) {
         return true;
@@ -95,12 +117,12 @@ export default function App() {
     });
     const minMaxPrices = findMinMaxPrice(newFilteredList);
     setMinMax(minMaxPrices);
-    console.log('minMaxPrices', minMaxPrices);
     setFilteredList(newFilteredList);
-    console.log('newFilteredList:', newFilteredList);
-
-    // setMinCost(minMaxPrices.min);
-    // setMaxCost(minMaxPrices.max);
+    console.log('newFilteredList', newFilteredList);
+    if (newFilteredList.length === 0) {
+      setPaginatedList([]);
+    }
+    newFilteredList.length === 0 && setIsNothingFound(true);
   }
 
   function findMinMaxPrice(array) {
@@ -122,7 +144,12 @@ export default function App() {
   return (
     <section className="main">
       <h1>Каталог товаров</h1>
-      <SearchForm searchQuery={searchQuery} onType={setSearchQuery} onSearch={searchItems} />
+      <SearchForm
+        searchQuery={searchQuery}
+        onType={setSearchQuery}
+        onSearch={searchItems}
+        isInputDisabled={isInputDisabled}
+      />
       <Filter
         brands={brands}
         selectedBrand={selectedBrand}
@@ -134,8 +161,10 @@ export default function App() {
         minMax={minMax}
         onFilter={filterItems}
       />
-      {ids.length === 0 && <p className="main__search-greeting">Введите фразу для поиска</p>}
-      {filteredList.length !== 0 && <CardList paginatedList={paginatedList} />}
+      {showGreetingPhrase && <p className="main__search-greeting">Введите фразу для поиска</p>}
+      {showPreloder ? <Preloader /> : <CardList paginatedList={paginatedList} />}
+      {nothingFound && <p className="main__search-greeting">Ничего не найдено...</p>}
+
       {filteredList.length !== 0 && (
         <PaginatedItems
           itemOffset={itemOffset}
